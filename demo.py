@@ -55,7 +55,7 @@ def demo_config() -> Config:
         maker_rebate_target=0.001,
         cooldown_period=600,
         max_daily_drawdown=0.10,
-        base_spread_pct=0.008,
+        base_spread_pct=0.010,
         cancel_replace_interval_ms=200,
         ai_update_interval_s=5,
         min_order_size=10.0,
@@ -74,7 +74,7 @@ class SyntheticMarket:
 
     def step(self) -> tuple[OrderBook, float]:
         # Random walk on the true fair value, bounded.
-        self._true_fv += self._rng.gauss(0, 0.006)
+        self._true_fv += self._rng.gauss(0, 0.003)
         self._true_fv = max(0.05, min(0.95, self._true_fv))
 
         # Construct a plausible order book around true_fv.
@@ -170,7 +170,7 @@ async def run_demo():
         paper.process_book_update(book, state)
 
         # 3) Periodically refresh the AI fair value.
-        if tick % 5 == 0:
+        if tick % 3 == 0:
             state.fair_value = valuation.estimate(true_fv, book)
             logger.info(
                 "[tick %02d] FV refresh: %.4f (conf=%s, sf=%.2f)",
@@ -209,7 +209,7 @@ async def run_demo():
                     )
                     placed.append((side.value, price, size))
 
-        if tick % 5 == 0 and placed:
+        if tick % 9 == 0 and placed:
             preview = ", ".join(f"{s} {sz:.0f}@{p:.4f}" for s, p, sz in placed[:4])
             logger.info("[tick %02d] quotes: %s%s", tick, preview,
                         " …" if len(placed) > 4 else "")
